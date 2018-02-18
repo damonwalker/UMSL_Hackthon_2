@@ -1,13 +1,37 @@
+const lyft =  require('node-lyft');
+let defaultClient = lyft.ApiClient.instance;
+
+let clientAuth = defaultClient.authentications['Client Authentication'];
+clientAuth.accessToken = '3tW4d2X4WW8rfyRYuvujo5a8GXDwmz0zs2aCt57qz2eI2y/L79TwrjqilJRFck1TYnD6vSi5jbvglSzGRYq9qmD09bMGlQQXUq1iTCdTSmmCqWqG1IGRNt4=';
+let apiInstance = new lyft.PublicApi();
+
 const express = require('express')
 const app = express()
-console.log("anything")
+//var passedURL;
 app.get('/getplaces', (req, res) =>{
   const superagent=require("superagent")
-  var url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=49.89458,-97.14137&sensor=true&key=AIzaSyAVU6qsGHwi9ARnA7RuxUIH20oqPiQiCv8&rankby=distance&types=bus_station";
-  superagent.get(url).end(function (err, response) {
-    if(err) {console.log(err);}
-    else{res.json(response.body);}
+
+  var url = req.query.passedURL;
+  var lat = req.query.latitude;
+  var lng = req.query.longitude;
+
+ //lyft
+  apiInstance.getDrivers(lat, lng).then((data) => {
+
+    superagent.get(url).end(function (err, response) {
+      if(err) {console.log(err);}
+      else{
+        const responseData = {
+          googlePlaces: response.body,
+          lyft: data
+        };
+        res.json(responseData);
+      }
+    });
+  }, (error) => {
+    console.error(error);
   });
+  
 })
 
 app.use(express.static("./public_folder"))
